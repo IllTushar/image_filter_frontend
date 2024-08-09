@@ -21,6 +21,7 @@ import com.example.background_image.Api.ApiInterface;
 import com.example.background_image.Api.RetrofitClient;
 import com.example.background_image.Cache.LocalCache;
 import com.example.background_image.Image.BlackWhite.ResponseBlackWhite;
+import com.example.background_image.Image.RemoveBackGround.RemoveImagebackground;
 import com.example.background_image.Image.UploadImage.ResponseImage.ResponseImage;
 import com.example.background_image.R;
 import com.example.background_image.utils;
@@ -146,7 +147,17 @@ public class ImageApis {
                 dialog.dismiss();
             }
         });
-
+        // Transparent Image..
+        removeBG.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                if (cache.getId() != null) {
+                    removeBackground(cache.getId(), responseImage);
+                } else {
+                    util.toast(false, "Image ID is not found!!");
+                }
+            }
+        });
         // BlackWhiteImage
         blackWhite.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -166,6 +177,43 @@ public class ImageApis {
         dialog.setCanceledOnTouchOutside(false);
         // Show the dialog
         dialog.show();
+    }
+
+    private void removeBackground(Integer id, ImageView responseImage) {
+        util.showDialog("Please wait...");
+        ApiInterface api = RetrofitClient.getRetrofit().create(ApiInterface.class);
+        Call<RemoveImagebackground> call = api.removeBackground(id);
+        call.enqueue(new Callback<RemoveImagebackground>() {
+            @Override
+            public void onResponse(Call<RemoveImagebackground> call, Response<RemoveImagebackground> response) {
+                util.dismissDialog();
+                if (response.isSuccessful()) {
+                    if (response.code() == 200) {
+                        if (response.body().getImageData().toString() != null) {
+                            util.toast(true, "Background Remove Successful!!");
+                            displayBase64Image(response.body().getImageData().toString(), responseImage);
+                        }
+                    } else {
+                        util.toast(false, "Status Code: " + response.code());
+                    }
+                } else {
+                    try {
+                        String errorBody = response.errorBody().string();
+                        Log.e("Upload Error", "Response Code: " + response.code() + ", Error: " + errorBody);
+                        util.toast(false, "Error: " + errorBody);
+                    } catch (Exception e) {
+                        Log.e("Upload Error", "Failed to read error body", e);
+                        util.toast(false, "Failed to upload image: " + e.getMessage());
+                    }
+                }
+            }
+
+            @Override
+            public void onFailure(Call<RemoveImagebackground> call, Throwable t) {
+                util.dismissDialog();
+                util.toast(false, "Failed: " + t.getMessage());
+            }
+        });
     }
 
     private void blackWhiteImageFunction(Integer id, ImageView responseImage) {

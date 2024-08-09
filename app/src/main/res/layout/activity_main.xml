@@ -72,22 +72,15 @@
 
         <androidx.appcompat.widget.AppCompatButton
             android:id="@+id/selectePhoto"
-            android:layout_width="0dp"
+            android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_margin="10dp"
-            android:layout_weight="1"
+
             android:background="@drawable/select_button_background"
             android:text="Select Photo"
             android:textAllCaps="false"
             android:textColor="@color/white" />
 
-        <androidx.appcompat.widget.AppCompatButton
-            android:layout_width="0dp"
-            android:layout_height="wrap_content"
-            android:layout_margin="10dp"
-            android:layout_weight="1"
-            android:background="@drawable/convert_button"
-            android:text="Remove BG"
-            android:textAllCaps="false" />
+
     </LinearLayout>
 </androidx.constraintlayout.widget.ConstraintLayout>

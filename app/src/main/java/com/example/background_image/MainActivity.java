@@ -3,6 +3,7 @@ package com.example.background_image;
 import android.Manifest;
 import android.content.Intent;
 import android.content.pm.PackageManager;
+import android.database.Cursor;
 import android.net.Uri;
 import android.os.Bundle;
 import android.provider.MediaStore;
@@ -21,6 +22,20 @@ import androidx.core.graphics.Insets;
 import androidx.core.view.ViewCompat;
 import androidx.core.view.WindowInsetsCompat;
 
+import com.example.background_image.Api.ApiInterface;
+import com.example.background_image.Api.RetrofitClient;
+import com.example.background_image.Image.ImageFunction.ImageApis;
+import com.example.background_image.Image.UploadImage.ResponseImage.ResponseImage;
+
+import java.io.File;
+
+import okhttp3.MediaType;
+import okhttp3.MultipartBody;
+import okhttp3.RequestBody;
+import retrofit2.Call;
+import retrofit2.Callback;
+import retrofit2.Response;
+
 public class MainActivity extends AppCompatActivity {
     TextView title, text;
     AppCompatButton selectPhoto;
@@ -29,6 +44,7 @@ public class MainActivity extends AppCompatActivity {
     utils utils;
     ImageView circleImageView;
     functions function;
+    ImageApis imageApis;
 
     public void findID() {
         title = findViewById(R.id.title);
@@ -37,6 +53,7 @@ public class MainActivity extends AppCompatActivity {
         utils = new utils(MainActivity.this);
         circleImageView = findViewById(R.id.circleImageView);
         function = new functions(MainActivity.this);
+        imageApis = new ImageApis(MainActivity.this);
     }
 
     @Override
@@ -100,7 +117,9 @@ public class MainActivity extends AppCompatActivity {
             Uri selectedImage = data.getData();
             // Handle the selected image URI as needed, e.g., upload it to a server or display it
             circleImageView.setImageURI(selectedImage);
-            utils.toast(true, "Image Uploaded!!");
+            File file = new File(imageApis.getRealPathFromURI(selectedImage));
+            imageApis.uploadImage(file);
         }
     }
+
 }

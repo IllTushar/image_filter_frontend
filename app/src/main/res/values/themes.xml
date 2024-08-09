@@ -6,4 +6,12 @@
     </style>
 
     <style name="Theme.Background_image" parent="Base.Theme.Background_image" />
+    <style name="CustomDialogTheme" parent="Theme.AppCompat.Light.Dialog">
+        <item name="android:windowBackground">@drawable/dialog_background</item>
+        <item name="android:windowMinWidthMajor">90%</item>
+        <item name="android:windowMinWidthMinor">90%</item>
+        <item name="android:windowNoTitle">true</item>
+        <item name="android:textColor">@color/black</item>
+        <!-- Customize other attributes as needed -->
+    </style>
 </resources>

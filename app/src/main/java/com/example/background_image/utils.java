@@ -1,19 +1,23 @@
 package com.example.background_image;
 
+import android.app.ProgressDialog;
 import android.content.Context;
 import android.graphics.Color;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.widget.ImageView;
+import android.widget.ProgressBar;
 import android.widget.TextView;
 import android.widget.Toast;
 
 public class utils {
 
     Context context;
+    ProgressDialog pd;
 
     public utils(Context context) {
         this.context = context;
+        pd = new ProgressDialog(context);
     }
 
     public void toast(boolean status, String message) {
@@ -36,4 +40,14 @@ public class utils {
         toast.setView(layout);
         toast.show();
     }
+
+    public void showDialog(String message) {
+        pd.setMessage(message);
+        pd.show();
+    }
+
+    public void dismissDialog() {
+        pd.dismiss();
+    }
+
 }

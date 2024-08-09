@@ -19,6 +19,8 @@ import androidx.appcompat.widget.AppCompatButton;
 
 import com.example.background_image.Api.ApiInterface;
 import com.example.background_image.Api.RetrofitClient;
+import com.example.background_image.Cache.LocalCache;
+import com.example.background_image.Image.BlackWhite.ResponseBlackWhite;
 import com.example.background_image.Image.UploadImage.ResponseImage.ResponseImage;
 import com.example.background_image.R;
 import com.example.background_image.utils;
@@ -35,10 +37,12 @@ import retrofit2.Response;
 public class ImageApis {
     Context context;
     utils util;
+    LocalCache cache;
 
     public ImageApis(Context context) {
         this.context = context;
         util = new utils(context);
+        cache = new LocalCache(context);
     }
 
     // Method to get file path from URI
@@ -87,7 +91,7 @@ public class ImageApis {
                     if (response.code() == 200) {
                         util.toast(true, "Image Uploaded Successfully!!");
                         if (response.body().getImageData().toString() != null) {
-
+                            cache.saveId(response.body().getId());
                             showDialog(response.body().getImageData().toString());
                         }
 
@@ -130,11 +134,77 @@ public class ImageApis {
 
         // Find views in the custom layout
         ImageView responseImage = dialogView.findViewById(R.id.responseImage);
+        ImageView close = dialogView.findViewById(R.id.close);
         AppCompatButton removeBG = dialogView.findViewById(R.id.removeBG);
         AppCompatButton blackWhite = dialogView.findViewById(R.id.blackWhite);
         displayBase64Image(base64Image, responseImage);
+
+        // Close DialogBox
+        close.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                dialog.dismiss();
+            }
+        });
+
+        // BlackWhiteImage
+        blackWhite.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                if (cache.getId() != null) {
+                    blackWhiteImageFunction(cache.getId(), responseImage);
+                } else {
+                    util.toast(false, "Image ID is not found!!");
+                }
+            }
+        });
+
+        // Prevent the dialog from being canceled by clicking outside
+        dialog.setCancelable(false);
+
+        // Optionally, prevent the dialog from being canceled by pressing the back button
+        dialog.setCanceledOnTouchOutside(false);
         // Show the dialog
         dialog.show();
+    }
+
+    private void blackWhiteImageFunction(Integer id, ImageView responseImage) {
+        util.showDialog("Please wait..");
+        ApiInterface api = RetrofitClient.getRetrofit().create(ApiInterface.class);
+        Call<ResponseBlackWhite> call = api.blackWhiteImage(id);
+        call.enqueue(new Callback<ResponseBlackWhite>() {
+            @Override
+            public void onResponse(Call<ResponseBlackWhite> call, Response<ResponseBlackWhite> response) {
+                util.dismissDialog();
+                if (response.isSuccessful()) {
+                    if (response.code() == 200) {
+                        if (response.body().getBlackWhiteImage().toString().trim() != null) {
+                            util.toast(true, "Black-White Image!!");
+                            displayBase64Image(response.body().getBlackWhiteImage().toString(), responseImage);
+                        }
+                    } else {
+                        util.toast(false, "Status Code: " + response.code());
+                    }
+                } else {
+
+                    try {
+                        String errorBody = response.errorBody().string();
+                        Log.e("Upload Error", "Response Code: " + response.code() + ", Error: " + errorBody);
+                        util.toast(false, "Error: " + errorBody);
+                    } catch (Exception e) {
+                        Log.e("Upload Error", "Failed to read error body", e);
+                        util.toast(false, "Failed to upload image: " + e.getMessage());
+                    }
+                }
+
+            }
+
+            @Override
+            public void onFailure(Call<ResponseBlackWhite> call, Throwable t) {
+                util.dismissDialog();
+                util.toast(false, "Failed: " + t.getMessage());
+            }
+        });
     }
 
     // Method to get MIME type from file path
